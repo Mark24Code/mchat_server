@@ -27,37 +27,14 @@ module Config
       end
     end
 
-    def get_entry_name(app_name)
-      app_name.split("_").map { |n| n.capitalize }.join()
-    end
-
-    def mount_app(app_name)
-      self.loads("#{app_name}/app.rb")
-    end
-
     def load_tasks
       self.loads(['config/tasks'])
-    end
-
-    def prepare(load_modular = ['setting', 'logger', 'database'])
-      if load_modular.include? 'setting'
-        # setting
-        # load setting
-        require_relative '../setting'
-      end
-
-      if load_modular.include? 'loggger'
-        # load logger
-        require_relative './log_man'
-
-      end
-
-      if load_modular.include? 'database'
-        # load database
-        require_relative './database'
-      end
     end
   end
 end
 
-Config.prepare
+require_relative './base/base_setting'
+require_relative './setting'
+require_relative './log_tracker'
+require_relative './redis_db'
+
