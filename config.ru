@@ -1,5 +1,5 @@
-require './config/auto'
+require './config/boot'
 
-Config.mount_app('app')
+require_relative './app/app'
 
 run App

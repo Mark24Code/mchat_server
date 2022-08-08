@@ -1,6 +1,7 @@
 require 'sinatra/base'
 require 'sinatra/contrib'
 
+
 # Sinatra Doc http://sinatrarb.com/intro.html
 class App < Sinatra::Base
   # Help Doc http://sinatrarb.com/contrib/
@@ -15,7 +16,9 @@ class App < Sinatra::Base
     set :allow_headers, 'content-type,if-modified-since,allow_headers,authorization'
 
     # http://sinatrarb.com/contrib/custom_logger
-    set :logger, Config::LogMan.base
+    set :logger, Config::LogTracker.base
+
+    set :redis, RedisDB
   end
 
   configure :development do
@@ -23,8 +26,6 @@ class App < Sinatra::Base
     register Sinatra::Reloader
   end
 
-  # register UsersController
-  # register TodoListsController
 
   class << self
     def define_routes(&block)
@@ -39,5 +40,6 @@ class App < Sinatra::Base
   end
 end
 
-App.autoload_models
 App.autoload_routes
+
+# mount redis

@@ -37,7 +37,7 @@ Make your own development database first.
 
 e.g
 ```
-echo 'export APP_DATABASE_URL="postgres://postgres:<password>@localhost/postgres"' >> ~/.zshrc
+echo 'export APP_redis_url="postgres://postgres:<password>@localhost/postgres"' >> ~/.zshrc
 ```
 
 ## Find helpful rake tasks
@@ -71,19 +71,19 @@ Config::Default.configure do
   set :secrets, ENV.fetch('SECRETS') { 'YOU CANNOT GUESS ME' }
   set :max_threads, ENV.fetch('MAX_THREADS') { 5 }
 
-  set :database_url, ENV['DATABASE_URL']
+  set :redis_url, ENV['redis_url']
 end
 
 Config::Development.configure do 
-  set :database_url, 'ENV['DATABASE_URL']'
+  set :redis_url, 'ENV['redis_url']'
 end
 
 Config::Test.configure do 
-  set :database_url, ENV['DATABASE_URL']
+  set :redis_url, ENV['redis_url']
 end
 
 Config::Production.configure do 
-  # set :database_url, ENV['DATABASE_URL']
+  # set :redis_url, ENV['redis_url']
 end
 ```
 
@@ -101,11 +101,11 @@ In your code, just use  `Config` directly. `core/bootstrap`  do a work that load
 ```Ruby
 Config.current  # current env configuration
 
-Config::Development.database_url
+Config::Development.redis_url
 
 Config::Development
 
-Config::Development.database_url
+Config::Development.redis_url
 ```
 
 You can also create your own `Config`  for your single Application:
@@ -116,7 +116,7 @@ class MyConfig < Config::Base
 end
 
 MyConfig.configure do 
-  # set :database_url, ENV['DATABASE_URL']
+  # set :redis_url, ENV['redis_url']
 end
 
 ```

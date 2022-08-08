@@ -1,4 +1,4 @@
-require_relative './config/auto'
+require_relative './config/boot'
 
 Config.load_tasks
 
