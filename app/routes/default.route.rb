@@ -36,14 +36,4 @@ App.define_routes do
       data: "pong"
     })
   end
-
-  get '/channel' do
-    
-    # 返回所有channel
-    json({
-      code: 200,
-      message: "success",
-      data: ["ch01", "ch02"]
-    })
-  end
 end
