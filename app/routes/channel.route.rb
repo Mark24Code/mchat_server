@@ -26,6 +26,20 @@ using SafeProtect
 
 App.define_routes do
 
+  def boardcast_channel_message(content)
+
+    new_message = {
+      user_name: 'Mchat',
+      content: content,
+      timestamp: Time.now.to_i
+    }
+
+    msg_key = "mchat_channels:#{channel_name}/messages:#{user_name}/time:#{timestamp}"
+
+    settings.redis.hmset(msg_key, *new_message)
+    settings.redis.expire(msg_key, ChannelConfig::MessageExpire)
+  end
+
   # 约定
   # prefix: mchat_channels  
   # Redis Data Structure:  <key:value>/<key:value>/
@@ -136,7 +150,7 @@ App.define_routes do
       payload = JSON.parse(request.body.read)
       user_name = payload.fetch("user_name", "").safe
 
-      if !user_name || !channel_name
+      if !user_name || !channel_name || ['mchat','admin','system','0','null','nil', ' '].any?(user_name.downcase)
         json({
           code: StatusCode::InvalidParams,
           message: "params are invalid",
@@ -158,6 +172,7 @@ App.define_routes do
         create_name = settings.redis.set(name_key, user_name)
         settings.redis.expire(name_key, ChannelConfig::UserOnlineExpire)
 
+        boardcast_channel_message("<#{user_name}> join the channel.")
         json({
           code: StatusCode::Success,
           message: "success",
@@ -194,6 +209,10 @@ App.define_routes do
 
       if check_name
         del_user = settings.redis.del("mchat_channels:#{channel_name}/users:#{user_name}")
+        
+        # 注册离开信息
+        boardcast_channel_message("<#{user_name}> leave the channel.")
+        
         json({
           code: StatusCode::Success,
           message: "leave mchat_channels:#{channel_name}",

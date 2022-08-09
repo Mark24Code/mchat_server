@@ -22,7 +22,7 @@ App.define_routes do
       message: "success",
       data: {
         timestamp: Time.now.to_i,
-        uid: "Mchat",
+        user_name: "Mchat",
         content: "Welcome to Mchat. Connect server success! :D"
       }
     })
