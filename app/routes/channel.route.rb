@@ -26,15 +26,17 @@ using SafeProtect
 
 App.define_routes do
 
-  def boardcast_channel_message(content)
+  def boardcast_channel_message(channel_name, content)
+
+    timestamp = Time.now.to_i
 
     new_message = {
       user_name: 'Mchat',
       content: content,
-      timestamp: Time.now.to_i
+      timestamp: timestamp
     }
 
-    msg_key = "mchat_channels:#{channel_name}/messages:#{user_name}/time:#{timestamp}"
+    msg_key = "mchat_channels:#{channel_name}/messages:mchat/time:#{timestamp}"
 
     settings.redis.hmset(msg_key, *new_message)
     settings.redis.expire(msg_key, ChannelConfig::MessageExpire)
@@ -55,7 +57,7 @@ App.define_routes do
 
   delete '/channels/:name' do
     begin
-      channel_name = params[:name].safe
+      channel_name = params[:name]
       
       #检查如果存在成员，则无法删除
       channel_active_users = settings.redis.keys("mchat_channels:#{channel_name}/users*")
@@ -89,7 +91,7 @@ App.define_routes do
   post '/channels/:name' do
     # 创建频道
     begin
-      channel_name = params[:name].safe
+      channel_name = params[:name]
       
       channels = settings.redis.smembers("mchat_channels") || []
       # 检查如果存在成员，则无法重复创建
@@ -124,7 +126,7 @@ App.define_routes do
     # 频道信息
     # * 返回在线用户
     begin
-      channel_name = params[:channel_name].safe
+      channel_name = params[:channel_name]
       channel_active_users = settings.redis.keys("mchat_channels:#{channel_name}/users*")
       json({
         code: StatusCode::Success,
@@ -146,9 +148,10 @@ App.define_routes do
   post '/channels/:channel_name/join' do
     # 加入频道，注册用户
     begin
-      channel_name = params[:channel_name].safe
+      channel_name = params[:channel_name]
+      
       payload = JSON.parse(request.body.read)
-      user_name = payload.fetch("user_name", "").safe
+      user_name = payload.fetch("user_name", "")
 
       if !user_name || !channel_name || ['mchat','admin','system','0','null','nil', ' '].any?(user_name.downcase)
         json({
@@ -172,7 +175,7 @@ App.define_routes do
         create_name = settings.redis.set(name_key, user_name)
         settings.redis.expire(name_key, ChannelConfig::UserOnlineExpire)
 
-        boardcast_channel_message("<#{user_name}> join the channel.")
+        boardcast_channel_message(channel_name, "<#{user_name}> join the channel.")
         json({
           code: StatusCode::Success,
           message: "success",
@@ -193,9 +196,9 @@ App.define_routes do
   post '/channels/:channel_name/leave' do
     # 离开频道，注销用户
     begin
-      channel_name = params[:channel_name].safe
+      channel_name = params[:channel_name]
       payload = JSON.parse(request.body.read)
-      user_name = payload.fetch("user_name", "").safe # form
+      user_name = payload.fetch("user_name", "") # form
 
       if !user_name || !channel_name
         json({
@@ -211,7 +214,7 @@ App.define_routes do
         del_user = settings.redis.del("mchat_channels:#{channel_name}/users:#{user_name}")
         
         # 注册离开信息
-        boardcast_channel_message("<#{user_name}> leave the channel.")
+        boardcast_channel_message(channel_name, "<#{user_name}> leave the channel.")
         
         json({
           code: StatusCode::Success,
@@ -238,9 +241,9 @@ App.define_routes do
     # 更新在线状态
 
     begin
-      channel_name = params[:channel_name].safe
+      channel_name = params[:channel_name]
       payload = JSON.parse(request.body.read)
-      user_name = payload.fetch("user_name", "").safe # form
+      user_name = payload.fetch("user_name", "") # form
 
       name_key = "mchat_channels:#{channel_name}/users:#{user_name}"
       check_name = settings.redis.get(name_key)
@@ -277,11 +280,11 @@ App.define_routes do
   post '/channels/:channel_name/messages' do
     # 创建频道信息
     begin
-      channel_name = params[:channel_name].safe
+      channel_name = params[:channel_name]
       payload = JSON.parse(request.body.read)
 
-      user_name = payload.fetch("user_name", "").safe 
-      content = payload.fetch("content", "").safe
+      user_name = payload.fetch("user_name", "") 
+      content = payload.fetch("content", "")
       timestamp = Time.now.to_i
       new_message = {
         user_name: user_name,
@@ -312,7 +315,7 @@ App.define_routes do
 
   get '/channels/:channel_name/messages' do
     begin
-      channel_name = params[:channel_name].safe
+      channel_name = params[:channel_name]
       # payload = JSON.parse(request.body.read)
 
       # 获得还未超时的所有记录
