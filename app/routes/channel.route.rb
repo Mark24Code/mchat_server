@@ -43,7 +43,7 @@ App.define_routes do
   end
 
   # 约定
-  # prefix: mchat_channels  
+  # prefix: mchat_channels
   # Redis Data Structure:  <key:value>/<key:value>/
   get '/channels' do
     channels = settings.redis.smembers('mchat_channels')
@@ -58,10 +58,10 @@ App.define_routes do
   delete '/channels/:name' do
     begin
       channel_name = params[:name]
-      
+
       #检查如果存在成员，则无法删除
       channel_active_users = settings.redis.keys("mchat_channels:#{channel_name}/users*")
-      if channel_active_users.length > 0 
+      if channel_active_users.length > 0
         return json({
           code: StatusCode::ServerError,
           message: "the channel have active users , cannot delete it",
@@ -92,7 +92,7 @@ App.define_routes do
     # 创建频道
     begin
       channel_name = params[:name]
-      
+
       channels = settings.redis.smembers("mchat_channels") || []
       # 检查如果存在成员，则无法重复创建
       if channels.any?(channel_name)
@@ -104,7 +104,7 @@ App.define_routes do
         }
       })
       end
-  
+
       resp = settings.redis.sadd('mchat_channels', channel_name)
       json({
         code: StatusCode::Success,
@@ -127,15 +127,30 @@ App.define_routes do
     # * 返回在线用户
     begin
       channel_name = params[:channel_name]
-      channel_active_users = settings.redis.keys("mchat_channels:#{channel_name}/users*")
-      json({
-        code: StatusCode::Success,
-        message: "success",
-        data: {
-          online_users: channel_active_users || [],
-          total_users: channel_active_users.length || 0
-        }
-      })
+
+      channels = settings.redis.smembers("mchat_channels") || []
+
+      if channels.any? channel_name
+        channel_active_users = settings.redis.keys("mchat_channels:#{channel_name}/users*")
+        json({
+          code: StatusCode::Success,
+          message: "success",
+          data: {
+            channel_name: channel_name,
+            online_users: channel_active_users || [],
+            total_users: channel_active_users.length || 0
+          }
+        })
+      else
+        # 无这个频道，是否新建？
+        json({
+          code: StatusCode::RecordNotExist,
+          message: "No this channel",
+          data: {
+            channel_name: channel_name,
+          }
+        })
+      end
     rescue => exception
       json({
         code: StatusCode::ServerError,
@@ -149,7 +164,7 @@ App.define_routes do
     # 加入频道，注册用户
     begin
       channel_name = params[:channel_name]
-      
+
       payload = JSON.parse(request.body.read)
       user_name = payload.fetch("user_name", "")
 
@@ -212,10 +227,10 @@ App.define_routes do
 
       if check_name
         del_user = settings.redis.del("mchat_channels:#{channel_name}/users:#{user_name}")
-        
+
         # 注册离开信息
         boardcast_channel_message(channel_name, "<#{user_name}> leave the channel.")
-        
+
         json({
           code: StatusCode::Success,
           message: "leave mchat_channels:#{channel_name}",
@@ -248,7 +263,7 @@ App.define_routes do
       name_key = "mchat_channels:#{channel_name}/users:#{user_name}"
       check_name = settings.redis.get(name_key)
 
-      if check_name 
+      if check_name
         settings.redis.expire(name_key, ChannelConfig::UserOnlineExpire)
         return json({
           code: StatusCode::Success,
@@ -262,12 +277,12 @@ App.define_routes do
         return json({
           code: StatusCode::UserNotExist,
           message: "error user not exist",
-          data: { 
+          data: {
             user_name: user_name
           }
         })
       end
-      
+
     rescue => exception
       json({
         code: StatusCode::ServerError,
@@ -283,7 +298,7 @@ App.define_routes do
       channel_name = params[:channel_name]
       payload = JSON.parse(request.body.read)
 
-      user_name = payload.fetch("user_name", "") 
+      user_name = payload.fetch("user_name", "")
       content = payload.fetch("content", "")
       timestamp = Time.now.to_i
       new_message = {
@@ -296,7 +311,7 @@ App.define_routes do
 
       settings.redis.hmset(msg_key, *new_message)
       settings.redis.expire(msg_key, ChannelConfig::MessageExpire)
-      
+
       json({
         code: StatusCode::Success,
         message: "post new message success",
