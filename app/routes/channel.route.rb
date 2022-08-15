@@ -1,9 +1,9 @@
 require_relative './status_code'
 
 module ChannelConfig
-  UserOnlineExpire = 960 # 必须大于轮询更新时间
-  UserOnlineHeartCheck = 920 # 必须小于
-  MessageExpire = 930
+  UserOnlineExpire = 60 # 必须大于轮询更新时间
+  UserOnlineHeartCheck = 50 # 必须小于
+  MessageExpire = 20
 end
 
 module SafeProtect
