@@ -1,13 +1,17 @@
 # Mchat Server
 
-Lightweight web framework codebase. Just clone and develop on it.
+Mchat is IRC like chat client.
 
-Tech component: Rack+Sinatra+Sequel and default use Postgresql database.
+This is Mchat server repo, client repo:
 
-Add rails-like migration command line helpers.
+* [mchat_client](https://github.com/Mark24Code/mchat)
 
+## Prepare
 
+make sure you run redis service
 ## ENV
+
+provide ENV for the server.
 
 `REDIS_URL`
 
@@ -28,3 +32,10 @@ all tasks in `config/tasks`, you can edit by yourself.
 you can also use docker
 
 `docker built -t <what your docker image label>  .`
+
+
+
+## License
+
+The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
