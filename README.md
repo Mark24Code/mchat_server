@@ -6,6 +6,8 @@ This is Mchat server repo, client repo:
 
 * [mchat_client](https://github.com/Mark24Code/mchat)
 
+[Doc: 用Ruby打造一个命令行Slack](https://mark24code.github.io/ruby/2022/08/15/%E7%94%A8Ruby%E6%89%93%E9%80%A0%E4%B8%80%E4%B8%AA%E5%91%BD%E4%BB%A4%E8%A1%8CSlack.html)
+
 ## Prepare
 
 make sure you run redis service
