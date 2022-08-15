@@ -6,6 +6,6 @@ namespace :server do
 
   desc "Start production server"
   task :prod do
-    exec("APP_ENV=production bundle exec rackup -p 4567 -o 0.0.0.0")
+    exec("APP_ENV=production RACK_ENV=production bundle exec rackup -p 4567 -o 0.0.0.0")
   end
 end

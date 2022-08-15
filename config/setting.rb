@@ -16,7 +16,8 @@ module Config
     end
 
     Production.configure do 
-      # set :redis_url, ENV['REDIS_URL']
+      set :app_env, ENV.fetch('APP_ENV'){ 'production' }
+      set :redis_url, ENV['REDIS_URL']
     end
   end
 end
